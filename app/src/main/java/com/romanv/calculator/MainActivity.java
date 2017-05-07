@@ -5,6 +5,7 @@ import com.romanv.calculator.application.api.Action;
 import com.romanv.calculator.application.sources.ApplicationImpl;
 
 import android.support.annotation.IdRes;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.widget.TextView;
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_about:
+                showAboutDialog();
                 return true;
 
             default:
@@ -55,6 +57,17 @@ public class MainActivity extends AppCompatActivity {
     public void onButtonClick(View view) throws Exception {
         Action action = idToAction(view.getId());
         application.perform(action);
+    }
+
+    public void showAboutDialog() {
+        View view = getLayoutInflater().inflate(R.layout.dialog_about, null);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setView(view);
+
+        AlertDialog dialog = builder.create();
+        //Button deleteButton = (Button) dialog.findViewById(buttonId);
+        dialog.show();
     }
 
     private void onInputChanged(String inputString) {

@@ -22,4 +22,6 @@
     <string name="delete">CLR</string>
 
     <string name="action_about">About</string>
+
+    <string name="about_author">Author - Roman Vorobyov</string>
 </resources>
