@@ -1,46 +1,43 @@
 package com.romanv.calculator.application.sources;
 
 import com.romanv.calculator.application.api.Callback;
+import com.romanv.calculator.application.api.InputBuffer;
 
-import java.util.ArrayList;
-import java.util.List;
+class InputBufferImpl extends EventEmitter<String> implements InputBuffer {
 
-class InputBuffer {
-
-    InputBuffer() {
-        subscribers = new ArrayList<Callback<String>>();
+    InputBufferImpl() {
         buffer = "";
     }
 
-    void append(String str) {
+    @Override
+    public void append(String str) {
         buffer += str;
         notifySubscribers();
     }
 
-    void removeLastElement() {
+    @Override
+    public void removeLastElement() {
         if (!buffer.isEmpty()) {
             buffer = buffer.substring(0, buffer.length() - 1);
             notifySubscribers();
         }
     }
 
-    void clear() {
+    @Override
+    public void clear() {
         buffer = "";
         notifySubscribers();
     }
 
     void subscribeToInputChange(Callback<String> callback) {
-        subscribers.add(callback);
+        addSubscriber(callback);
     }
 
-    private void notifySubscribers() {
-        for (Callback<String> subscriber : subscribers) {
-            subscriber.call(buffer);
-        }
+    @Override
+    public String getValue() {
+        return buffer;
     }
 
     private String buffer;
-
-    private List<Callback<String>> subscribers;
 
 }

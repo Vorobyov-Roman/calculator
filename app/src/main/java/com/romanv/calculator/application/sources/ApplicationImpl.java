@@ -1,24 +1,31 @@
 package com.romanv.calculator.application.sources;
 
+import com.romanv.calculator.application.api.Command;
+import com.romanv.calculator.application.api.CommandsFactory;
+import com.romanv.calculator.application.api.Environment;
 import com.romanv.calculator.application.api.Application;
-import com.romanv.calculator.application.api.Action;
 import com.romanv.calculator.application.api.Callback;
 
 public class ApplicationImpl implements Application {
 
-    public ApplicationImpl() {
-        inputBuffer = new InputBuffer();
+    public ApplicationImpl(Environment environment) {
+        this.commandsFactory = new CommandsFactoryImpl(environment);
+
+        inputBuffer = new InputBufferImpl();
+        outputBuffer = new OutputBuffer();
+        calculator = new Calculator(environment);
+
+        inputBuffer.subscribeToInputChange(calculator::onInputChanged);
+        calculator.subscribeToOutputChange(outputBuffer::onOutputChanged);
     }
 
-    public void perform(Action action) {
-        if (action == Action.Delete) {
-            inputBuffer.removeLastElement();
+    @Override
+    public void execute(Command command) {
+        try {
+            command.execute(inputBuffer);
         }
-        else if (action == Action.Clear) {
-            inputBuffer.clear();
-        }
-        else {
-            inputBuffer.append(action.toString());
+        catch (UnexpectedTokenException e) {
+            calculator.reset();
         }
     }
 
@@ -26,6 +33,18 @@ public class ApplicationImpl implements Application {
         inputBuffer.subscribeToInputChange(callback);
     }
 
-    private InputBuffer inputBuffer;
+    public void subscribeToOutputChange(Callback<String> callback) {
+        outputBuffer.subscribeToOutputChange(callback);
+    }
+
+    public CommandsFactory getCommandsFactory() {
+        return commandsFactory;
+    }
+
+    private CommandsFactory commandsFactory;
+
+    private InputBufferImpl inputBuffer;
+    private Calculator calculator;
+    private OutputBuffer outputBuffer;
 
 }

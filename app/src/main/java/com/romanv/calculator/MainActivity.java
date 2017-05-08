@@ -1,7 +1,10 @@
 package com.romanv.calculator;
 
 import com.romanv.calculator.application.api.Application;
-import com.romanv.calculator.application.api.Action;
+import com.romanv.calculator.application.api.ActionButton;
+import com.romanv.calculator.application.api.Command;
+import com.romanv.calculator.application.api.CommandsFactory;
+import com.romanv.calculator.application.api.Environment;
 import com.romanv.calculator.application.sources.ApplicationImpl;
 
 import android.support.annotation.IdRes;
@@ -21,8 +24,9 @@ import android.os.Handler;
 public class MainActivity extends AppCompatActivity {
 
     public MainActivity() {
-        application = new ApplicationImpl();
+        application = new ApplicationImpl(getEnvironment());
         application.subscribeToInputChange(this::onInputChanged);
+        application.subscribeToOutputChange(this::onOutputChanged);
     }
 
     @Override
@@ -55,8 +59,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onButtonClick(View view) throws Exception {
-        Action action = idToAction(view.getId());
-        application.perform(action);
+        ActionButton button = idToActionButton(view.getId());
+        executeAction(button);
     }
 
     public void showAboutDialog() {
@@ -66,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
         builder.setView(view);
 
         AlertDialog dialog = builder.create();
-        //Button deleteButton = (Button) dialog.findViewById(buttonId);
         dialog.show();
     }
 
@@ -75,27 +78,39 @@ public class MainActivity extends AppCompatActivity {
         userInput.setText(inputString);
     }
 
-    private Action idToAction(@IdRes int buttonId) throws Exception {
+    private void onOutputChanged(String outputString) {
+        TextView evaluatedOutput = (TextView) findViewById(R.id.label_output);
+        evaluatedOutput.setText(outputString);
+    }
+
+    private void executeAction(ActionButton button) {
+        CommandsFactory commandsFactory = application.getCommandsFactory();
+        Command command = commandsFactory.createCommand(button);
+
+        application.execute(command);
+    }
+
+    private ActionButton idToActionButton(@IdRes int buttonId) throws Exception {
         switch (buttonId) {
-            case R.id.btn_one:   return Action.One;
-            case R.id.btn_two:   return Action.Two;
-            case R.id.btn_three: return Action.Three;
-            case R.id.btn_four:  return Action.Four;
-            case R.id.btn_five:  return Action.Five;
-            case R.id.btn_six:   return Action.Six;
-            case R.id.btn_seven: return Action.Seven;
-            case R.id.btn_eight: return Action.Eight;
-            case R.id.btn_nine:  return Action.Nine;
-            case R.id.btn_zero:  return Action.Zero;
+            case R.id.btn_one:   return ActionButton.One;
+            case R.id.btn_two:   return ActionButton.Two;
+            case R.id.btn_three: return ActionButton.Three;
+            case R.id.btn_four:  return ActionButton.Four;
+            case R.id.btn_five:  return ActionButton.Five;
+            case R.id.btn_six:   return ActionButton.Six;
+            case R.id.btn_seven: return ActionButton.Seven;
+            case R.id.btn_eight: return ActionButton.Eight;
+            case R.id.btn_nine:  return ActionButton.Nine;
+            case R.id.btn_zero:  return ActionButton.Zero;
 
-            case R.id.btn_add:      return Action.Add;
-            case R.id.btn_subtract: return Action.Subtract;
-            case R.id.btn_multiply: return Action.Multiply;
-            case R.id.btn_divide:   return Action.Divide;
+            case R.id.btn_add:      return ActionButton.Add;
+            case R.id.btn_subtract: return ActionButton.Subtract;
+            case R.id.btn_multiply: return ActionButton.Multiply;
+            case R.id.btn_divide:   return ActionButton.Divide;
 
-            case R.id.btn_point: return Action.Point;
+            case R.id.btn_point: return ActionButton.Point;
 
-            case R.id.btn_delete: return Action.Delete;
+            case R.id.btn_delete: return ActionButton.Delete;
 
             default:
                 throw new Exception();
@@ -131,10 +146,41 @@ public class MainActivity extends AppCompatActivity {
 
             private Handler handler = new Handler();
 
-            private Runnable clear = () -> application.perform(Action.Clear);
-            private Runnable delete = () -> application.perform(Action.Delete);
+            private Runnable clear = () -> executeAction(ActionButton.Clear);
+            private Runnable delete = () -> executeAction(ActionButton.Delete);
 
         });
+    }
+
+    private Environment getEnvironment() {
+        return new Environment() {
+
+            @Override
+            public String getAdditionSymbol() {
+                return getResources().getString(R.string.addition_symbol);
+            }
+
+            @Override
+            public String getSubtractionSymbol() {
+                return getResources().getString(R.string.subtraction_symbol);
+            }
+
+            @Override
+            public String getMultiplicationSymbol() {
+                return getResources().getString(R.string.multiplication_symbol);
+            }
+
+            @Override
+            public String getDivisionSymbol() {
+                return getResources().getString(R.string.division_symbol);
+            }
+
+            @Override
+            public String getPointSymbol() {
+                return getResources().getString(R.string.point);
+            }
+
+        };
     }
 
     private Application application;

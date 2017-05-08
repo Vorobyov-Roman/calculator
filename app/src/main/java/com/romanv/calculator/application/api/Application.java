@@ -2,8 +2,12 @@ package com.romanv.calculator.application.api;
 
 public interface Application {
 
-    public void perform(Action action);
+    void execute(Command command);
 
-    public void subscribeToInputChange(Callback<String> callback);
+    void subscribeToInputChange(Callback<String> callback);
+
+    void subscribeToOutputChange(Callback<String> callback);
+
+    CommandsFactory getCommandsFactory();
 
 }
